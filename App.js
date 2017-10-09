@@ -1,18 +1,70 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Image,
+  TouchableHighlight,
+} from 'react-native';
+
+class Cell extends React.Component {
+  handleTap() {
+    console.log('tap tap tap')
+  }
+
+  render() {
+    return (
+      <TouchableHighlight onPress={this.handleTap}>
+        <View style={styles.cell}>
+          <Image
+            style={styles.imageView }
+            source={{uri: this.props.cellItem.image[3]['#text']}}
+          />
+          <View style={styles.contentView }>
+            <Text style={[styles.whiteText, styles.textBold]}>{this.props.cellItem.name}</Text>
+            <Text style={styles.whiteText}>{this.props.cellItem.artist.name}</Text>
+          </View>
+          <View style={styles.accessoryView }>
+            <Text style={[styles.whiteText, styles.textCenter]}>></Text>
+          </View>
+        </View>
+      </TouchableHighlight>
+    )
+  }
+}
 
 export default class App extends React.Component {
+  fetchTopTracks() {
+    const apiKey = "4f3a0d8e5936b8dbe13be4c4c642698d"
+    const url = `http://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=${apiKey}&format=json`
+
+    return fetch(url).
+      then(response => response.json())
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.state = { tracks: [] }
+
+    // fetch api data
+    this.fetchTopTracks().
+      then(json => {
+        this.setState({ tracks: json.tracks.track })
+      })
+  }
+
   render() {
     return (
       <View style={styles.container}>
-        <View style={styles.greencontentbox}>
-          <Text>Open up App.js to start working on your app!</Text>
-          <Text>Changes you make will automatically reload.</Text>
-        </View>
-        <View style={styles.goldcontentbox}>
-          <Text>Shake your phone to open the developer menu.</Text>
-          <Text>Test....</Text>
-        </View>
+        <FlatList
+          data={this.state.tracks}
+          renderItem={ ({item}) => (
+            <Cell cellItem={item} />
+          )}
+          keyExtractor={ (_, index) => index }
+        />
       </View>
     );
   }
@@ -21,16 +73,35 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    paddingTop: 40,
+    paddingLeft: 15,
+    paddingRight: 15,
+    backgroundColor: '#000000'
+  },
+  cell: {
+    marginBottom: 4,
+    flexDirection: 'row',
+  },
+  imageView: {
+    height: 75,
+    width: 75,
+  },
+  contentView: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft: 15
+  },
+  accessoryView: {
+    width: 40,
     justifyContent: 'center',
   },
-  greencontentbox: {
-    flex: 1,
-    backgroundColor: 'green',
+  textCenter: {
+    textAlign: 'center'
   },
-  goldcontentbox: {
-    flex: 1,
-    backgroundColor: 'gold',
+  whiteText: {
+    color: 'white'
+  },
+  textBold: {
+    fontWeight: 'bold'
   }
 });
